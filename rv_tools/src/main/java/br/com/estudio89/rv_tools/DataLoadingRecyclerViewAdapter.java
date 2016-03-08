@@ -263,7 +263,9 @@ public abstract class DataLoadingRecyclerViewAdapter<VH extends RecyclerView.Vie
     }
 
     public void refresh() {
-        this.loaderManager.restartLoader(0, null, this);
+        if (!this.loaderManager.hasRunningLoaders()) {
+            this.loaderManager.restartLoader(0, null, this);
+        }
     }
 
     public abstract Cursor getLoaderCursor();
