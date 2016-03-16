@@ -39,6 +39,7 @@ public abstract class DataLoadingRecyclerViewAdapter<VH extends RecyclerView.Vie
 
     @NonNull private Context context;
     private LoaderManager loaderManager;
+    private String filter;
 
     public interface DataLoader {
         void onLoadMore();
@@ -246,7 +247,7 @@ public abstract class DataLoadingRecyclerViewAdapter<VH extends RecyclerView.Vie
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorDataLoader(this.context, this);
+        return new CursorDataLoader(this.context, this, this.filter);
     }
 
     @Override
@@ -268,17 +269,25 @@ public abstract class DataLoadingRecyclerViewAdapter<VH extends RecyclerView.Vie
         }
     }
 
-    public abstract Cursor getLoaderCursor();
+    public abstract Cursor getLoaderCursor(String filter);
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         changeCursor(null);
     }
 
+    public void filterData(String filter) {
+        this.filter = filter;
+        loaderManager.restartLoader(0, null, this);
+    }
+
     public static class CursorDataLoader extends SimpleCursorLoader {
         private WeakReference<DataLoadingRecyclerViewAdapter> wkAdapter;
-        public CursorDataLoader(Context context, DataLoadingRecyclerViewAdapter adapter) {
+        private final String filter;
+
+        public CursorDataLoader(Context context, DataLoadingRecyclerViewAdapter adapter, String filter) {
             super(context);
+            this.filter = filter;
             this.wkAdapter = new WeakReference<>(adapter);
         }
 
@@ -286,7 +295,7 @@ public abstract class DataLoadingRecyclerViewAdapter<VH extends RecyclerView.Vie
         public Cursor loadInBackground() {
             if (this.wkAdapter.get() != null) {
                 DataLoadingRecyclerViewAdapter adapter = this.wkAdapter.get();
-                return adapter.getLoaderCursor();
+                return adapter.getLoaderCursor(filter);
             }
             return null;
         }
