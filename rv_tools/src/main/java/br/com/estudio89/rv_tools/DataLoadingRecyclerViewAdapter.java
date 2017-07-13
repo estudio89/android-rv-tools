@@ -136,13 +136,22 @@ public abstract class DataLoadingRecyclerViewAdapter<VH extends RecyclerView.Vie
     }
 
     public void setHeaderView(View view) {
+        Constructor constructor = null;
         try {
-            Constructor constructor = this.viewHolderClass.getConstructor(this.getClass(), View.class);
+            constructor = this.viewHolderClass.getConstructor(this.getClass(), View.class);
             this.headerViewHolder = (VH) constructor.newInstance(this, view);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            try {
+                constructor = this.viewHolderClass.getConstructor(View.class);
+                this.headerViewHolder = (VH) constructor.newInstance(view);
+            } catch (Exception e1) {
+                throw new RuntimeException(e1);
+            }
+        } catch (Exception e2) {
+            throw new RuntimeException(e2);
         }
+
+
     }
 
     private boolean shouldDisplayProgress() {
